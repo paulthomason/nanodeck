@@ -36,11 +36,18 @@ DC_PIN = 25
 LCD_WIDTH = 128
 LCD_HEIGHT = 128
 
-serial = spi(port=0, device=0, cs_high=False,
-             gpio_DC=DC_PIN, gpio_RST=RST_PIN,
-             speed_hz=16000000)
+serial = spi(
+    port=0,
+    device=0,
+    cs_high=False,
+    gpio_DC=DC_PIN,
+    gpio_RST=RST_PIN,
+    speed_hz=16000000,
+)
 
-device = st7735(serial, width=LCD_WIDTH, height=LCD_HEIGHT, h_offset=2, v_offset=1)
+device = st7735(
+    serial, width=LCD_WIDTH, height=LCD_HEIGHT, h_offset=2, v_offset=1
+)
 
 try:
     font = ImageFont.truetype("DejaVuSansMono.ttf", 12)
@@ -102,15 +109,24 @@ class RemoteHandler(http.server.BaseHTTPRequestHandler):
         hat_buttons = ["KEY1", "KEY2", "KEY3"]
 
         btn = "".join(
-            f'<a href="/input?button_id={html.escape(b)}"><button class="joystick">{html.escape(label)}</button></a>'
+            (
+                f'<a href="/input?button_id={html.escape(b)}">'
+                f'<button class="joystick">{html.escape(label)}</button></a>'
+            )
             for b, label in joystick_buttons
         )
         hat_btn = "".join(
-            f'<a href="/input?button_id={html.escape(b)}"><button class="key">{html.escape(b)}</button></a>'
+            (
+                f'<a href="/input?button_id={html.escape(b)}">'
+                f'<button class="key">{html.escape(b)}</button></a>'
+            )
             for b in hat_buttons
         )
         images = "".join(
-            f'<li><a href="/view_image?image_name={html.escape(img)}">{html.escape(img)}</a></li>'
+            (
+                f'<li><a href="/view_image?image_name={html.escape(img)}">'
+                f'{html.escape(img)}</a></li>'
+            )
             for img in AVAILABLE_IMAGES
         )
         style = (
@@ -124,7 +140,8 @@ class RemoteHandler(http.server.BaseHTTPRequestHandler):
         )
         html_doc = (
             "<html><head>" + style + "</head><body>"
-            f"<h1>Pi Remote Control</h1><p>IP Address: {html.escape(ip_addr)}</p>"
+            "<h1>Pi Remote Control</h1>"
+            f"<p>IP Address: {html.escape(ip_addr)}</p>"
             f"<div>{btn}</div><div>{hat_btn}</div>"
             "<h2>Images</h2><ul>" + images + "</ul>"
             "</body></html>"
@@ -151,7 +168,9 @@ def start_server(host: str = "0.0.0.0", port: int = 8000) -> None:
     if _server_thread and _server_thread.is_alive():
         return
     _server = http.server.ThreadingHTTPServer((host, port), RemoteHandler)
-    _server_thread = threading.Thread(target=_server.serve_forever, daemon=True)
+    _server_thread = threading.Thread(
+        target=_server.serve_forever, daemon=True
+    )
     _server_thread.start()
 
 
@@ -167,17 +186,15 @@ def stop_server() -> None:
         _server_thread = None
 
 
-def draw_remote(screen, FONT) -> None:
-    """Placeholder for drawing remote status on the LCD."""
-    pass
-
-
 def remote_menu() -> None:
     """Display a simple interface to toggle the web server."""
     running = _server_thread is not None and _server_thread.is_alive()
     ip_addr = get_pi_ip_address()
     while True:
-        if GPIO.input(BUTTON_PINS["KEY1"]) == GPIO.LOW or GPIO.input(BUTTON_PINS["JOY_PRESS"]) == GPIO.LOW:
+        if (
+            GPIO.input(BUTTON_PINS["KEY1"]) == GPIO.LOW
+            or GPIO.input(BUTTON_PINS["JOY_PRESS"]) == GPIO.LOW
+        ):
             if running:
                 stop_server()
                 running = False
@@ -196,7 +213,9 @@ def remote_menu() -> None:
             color = "green" if running else "red"
             draw.text((10, 60), f"Status: {status}", fill=color, font=font)
             if running:
-                draw.text((10, 80), f"{ip_addr}:8000", fill="yellow", font=font)
+                draw.text(
+                    (10, 80), f"{ip_addr}:8000", fill="yellow", font=font
+                )
         time.sleep(0.05)
 
 

@@ -14,11 +14,18 @@ DC_PIN = 25
 LCD_WIDTH = 128
 LCD_HEIGHT = 128
 
-serial = spi(port=0, device=0, cs_high=False,
-             gpio_DC=DC_PIN, gpio_RST=RST_PIN,
-             speed_hz=16000000)
+serial = spi(
+    port=0,
+    device=0,
+    cs_high=False,
+    gpio_DC=DC_PIN,
+    gpio_RST=RST_PIN,
+    speed_hz=16000000,
+)
 
-device = st7735(serial, width=LCD_WIDTH, height=LCD_HEIGHT, h_offset=2, v_offset=1)
+device = st7735(
+    serial, width=LCD_WIDTH, height=LCD_HEIGHT, h_offset=2, v_offset=1
+)
 
 # --- Button setup ---
 GPIO.setmode(GPIO.BCM)
@@ -33,8 +40,11 @@ for pin in BUTTON_PINS.values():
 # --- Load images ---
 IMG_DIR = os.path.join(os.path.dirname(__file__), "images")
 os.makedirs(IMG_DIR, exist_ok=True)
-images = [os.path.join(IMG_DIR, f) for f in os.listdir(IMG_DIR)
-          if f.lower().endswith((".png", ".jpg", ".jpeg", ".bmp"))]
+images = [
+    os.path.join(IMG_DIR, f)
+    for f in os.listdir(IMG_DIR)
+    if f.lower().endswith((".png", ".jpg", ".jpeg", ".bmp"))
+]
 images.sort()
 
 if not images:
@@ -53,10 +63,12 @@ if not images:
 
 current_idx = 0
 
+
 def show_image(idx: int) -> None:
     path = images[idx]
     img = Image.open(path).convert("RGB").resize((LCD_WIDTH, LCD_HEIGHT))
     device.display(img)
+
 
 show_image(current_idx)
 

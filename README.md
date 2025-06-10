@@ -67,9 +67,9 @@ Follow these steps on a fresh Raspberry Pi OS (Legacy) Lite (32-bit) install to 
     ```
 7.  **Install Python Libraries:** (Inside the active virtual environment, **no `sudo`**)
     ```bash
-    pip install --upgrade luma.lcd # Installs luma.lcd, Pillow, and spidev
-    pip install psutil             # Optional: For system monitoring (CPU/RAM)
+    pip install -r requirements.txt
     ```
+    The `psutil` package is optional and used for system monitoring examples.
 
 ## 4. Writing to the Screen (`luma.lcd`)
 
@@ -110,4 +110,9 @@ From the main menu you can open a simple settings application. The following opt
   * The client now always connects to `192.168.0.81` on port `6667` and joins
     the `#pet` channel using the nickname `birdie`.
 * **Remote Web Server** – start a simple HTTP server for controlling the device remotely.
+
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
 

@@ -4,7 +4,6 @@
 import socket
 import threading
 import textwrap
-import time
 
 import RPi.GPIO as GPIO
 from luma.core.interface.serial import spi
@@ -25,11 +24,18 @@ DC_PIN = 25
 LCD_WIDTH = 128
 LCD_HEIGHT = 128
 
-serial = spi(port=0, device=0, cs_high=False,
-             gpio_DC=DC_PIN, gpio_RST=RST_PIN,
-             speed_hz=16000000)
+serial = spi(
+    port=0,
+    device=0,
+    cs_high=False,
+    gpio_DC=DC_PIN,
+    gpio_RST=RST_PIN,
+    speed_hz=16000000,
+)
 
-device = st7735(serial, width=LCD_WIDTH, height=LCD_HEIGHT, h_offset=2, v_offset=1)
+device = st7735(
+    serial, width=LCD_WIDTH, height=LCD_HEIGHT, h_offset=2, v_offset=1
+)
 
 try:
     font = ImageFont.truetype("DejaVuSansMono.ttf", 10)
@@ -89,7 +95,11 @@ def _handle_server(sock: socket.socket) -> None:
                     prefix, rest = line.split(" PRIVMSG ", 1)
                     target, text = rest.split(" :", 1)
                     if target == CHANNEL:
-                        nick = prefix.split("!")[0][1:] if line.startswith(":") else prefix
+                        nick = (
+                            prefix.split("!")[0][1:]
+                            if line.startswith(":")
+                            else prefix
+                        )
                         add_message(f"{nick}: {text}")
                 else:
                     add_message(line)
@@ -102,7 +112,9 @@ def main() -> None:
         _send(sock, f"USER {NICK} 0 * :{NICK}\r\n")
         _send(sock, f"JOIN {CHANNEL}\r\n")
 
-        thread = threading.Thread(target=_handle_server, args=(sock,), daemon=True)
+        thread = threading.Thread(
+            target=_handle_server, args=(sock,), daemon=True
+        )
         thread.start()
 
         try:
