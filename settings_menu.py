@@ -2,6 +2,7 @@
 """Settings menu for the Waveshare 1.44"""
 
 import time
+import subprocess
 import RPi.GPIO as GPIO
 from luma.core.interface.serial import spi
 from luma.core.render import canvas
@@ -101,23 +102,129 @@ def display_menu():
         ("Back", lambda: "BACK"),
     ])
 
+def wifi_menu():
+    index = 0
+    networks = []
+
+    def scan():
+        nonlocal networks, index
+        try:
+            out = subprocess.check_output([
+                "nmcli",
+                "-t",
+                "-f",
+                "SSID",
+                "device",
+                "wifi",
+                "list",
+            ])
+            networks = sorted({n.strip() for n in out.decode().splitlines() if n.strip()})
+        except Exception:
+            networks = []
+        index = 0
+
+    def connect(ssid: str):
+        subprocess.call(["nmcli", "device", "wifi", "connect", ssid])
+        time.sleep(1)
+
+    scan()
+    while True:
+        if networks and GPIO.input(BUTTON_PINS["JOY_UP"]) == GPIO.LOW:
+            index = (index - 1) % len(networks)
+            time.sleep(0.2)
+        elif networks and GPIO.input(BUTTON_PINS["JOY_DOWN"]) == GPIO.LOW:
+            index = (index + 1) % len(networks)
+            time.sleep(0.2)
+        elif GPIO.input(BUTTON_PINS["KEY2"]) == GPIO.LOW:
+            scan()
+            time.sleep(0.2)
+        elif GPIO.input(BUTTON_PINS["KEY1"]) == GPIO.LOW or GPIO.input(BUTTON_PINS["JOY_PRESS"]) == GPIO.LOW:
+            if networks:
+                connect(networks[index])
+            return "BACK"
+        elif GPIO.input(BUTTON_PINS["KEY3"]) == GPIO.LOW:
+            return "BACK"
+
+        with canvas(device) as draw:
+            draw.rectangle(device.bounding_box, outline="black", fill="black")
+            draw.text((15, 0), "WiFi", fill="white", font=font)
+            if not networks:
+                draw.text((15, 60), "No networks", fill="yellow", font=font)
+            else:
+                max_visible = 4
+                start = max(0, min(index - max_visible // 2, len(networks) - max_visible))
+                for offset, ssid in enumerate(networks[start : start + max_visible]):
+                    y = 20 + offset * 20
+                    if start + offset == index:
+                        draw.text((15, y), f"> {ssid}", fill="yellow", font=font)
+                    else:
+                        draw.text((15, y), ssid, fill="white", font=font)
+            draw.text((0, 110), "KEY2:Rescan", fill="gray", font=font)
+        time.sleep(0.05)
+
+
+def bluetooth_menu():
+    index = 0
+    devices = []
+
+    def scan():
+        nonlocal devices, index
+        try:
+            out = subprocess.check_output(["bluetoothctl", "devices"])
+            devs = []
+            for line in out.decode().splitlines():
+                parts = line.split(" ", 2)
+                if len(parts) >= 3:
+                    devs.append((parts[1], parts[2]))
+            devices = devs
+        except Exception:
+            devices = []
+        index = 0
+
+    def connect(mac: str):
+        subprocess.call(["bluetoothctl", "connect", mac])
+        time.sleep(1)
+
+    scan()
+    while True:
+        if devices and GPIO.input(BUTTON_PINS["JOY_UP"]) == GPIO.LOW:
+            index = (index - 1) % len(devices)
+            time.sleep(0.2)
+        elif devices and GPIO.input(BUTTON_PINS["JOY_DOWN"]) == GPIO.LOW:
+            index = (index + 1) % len(devices)
+            time.sleep(0.2)
+        elif GPIO.input(BUTTON_PINS["KEY2"]) == GPIO.LOW:
+            scan()
+            time.sleep(0.2)
+        elif GPIO.input(BUTTON_PINS["KEY1"]) == GPIO.LOW or GPIO.input(BUTTON_PINS["JOY_PRESS"]) == GPIO.LOW:
+            if devices:
+                connect(devices[index][0])
+            return "BACK"
+        elif GPIO.input(BUTTON_PINS["KEY3"]) == GPIO.LOW:
+            return "BACK"
+
+        with canvas(device) as draw:
+            draw.rectangle(device.bounding_box, outline="black", fill="black")
+            draw.text((15, 0), "Bluetooth", fill="white", font=font)
+            if not devices:
+                draw.text((15, 60), "No devices", fill="yellow", font=font)
+            else:
+                max_visible = 4
+                start = max(0, min(index - max_visible // 2, len(devices) - max_visible))
+                for offset, (_mac, name) in enumerate(devices[start : start + max_visible]):
+                    y = 20 + offset * 20
+                    if start + offset == index:
+                        draw.text((15, y), f"> {name}", fill="yellow", font=font)
+                    else:
+                        draw.text((15, y), name, fill="white", font=font)
+            draw.text((0, 110), "KEY2:Rescan", fill="gray", font=font)
+        time.sleep(0.05)
+
 
 def connections_menu():
-    def placeholder(name):
-        def inner():
-            while True:
-                if GPIO.input(BUTTON_PINS["KEY1"]) == GPIO.LOW or GPIO.input(BUTTON_PINS["JOY_PRESS"]) == GPIO.LOW or GPIO.input(BUTTON_PINS["KEY3"]) == GPIO.LOW:
-                    return "BACK"
-                with canvas(device) as draw:
-                    draw.rectangle(device.bounding_box, outline="black", fill="black")
-                    draw.text((20, 60), f"{name}", fill="white", font=font)
-                    draw.text((20, 80), "Not implemented", fill="yellow", font=font)
-                time.sleep(0.05)
-        return inner
-
     menu_loop([
-        ("WiFi", placeholder("WiFi")),
-        ("Bluetooth", placeholder("Bluetooth")),
+        ("WiFi", wifi_menu),
+        ("Bluetooth", bluetooth_menu),
         ("Back", lambda: "BACK"),
     ])
 
