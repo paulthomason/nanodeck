@@ -90,13 +90,13 @@ ITEMS_PER_SCREEN = LCD_HEIGHT // LINE_HEIGHT
 
 
 def run_selected():
-    script = os.path.join(
+    script_path = os.path.join(
         os.path.dirname(__file__), MENU_ITEMS[current_index][1]
     )
     device.cleanup()
     GPIO.cleanup()
     try:
-        subprocess.call(["python3", script])
+        subprocess.call(["python3", script_path])
     finally:
         reinitialize()
         time.sleep(0.5)
