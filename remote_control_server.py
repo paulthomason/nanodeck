@@ -186,6 +186,18 @@ def stop_server() -> None:
         _server_thread = None
 
 
+def draw_remote(running: bool, ip_addr: str) -> None:
+    """Render the remote server status on the LCD."""
+    with canvas(device) as draw:
+        draw.rectangle(device.bounding_box, outline="black", fill="black")
+        draw.text((10, 30), "Remote Server", fill="white", font=font)
+        status = "ON" if running else "OFF"
+        color = "green" if running else "red"
+        draw.text((10, 60), f"Status: {status}", fill=color, font=font)
+        if running:
+            draw.text((10, 80), f"{ip_addr}:8000", fill="yellow", font=font)
+
+
 def remote_menu() -> None:
     """Display a simple interface to toggle the web server."""
     running = _server_thread is not None and _server_thread.is_alive()
@@ -206,16 +218,7 @@ def remote_menu() -> None:
         elif GPIO.input(BUTTON_PINS["KEY3"]) == GPIO.LOW:
             break
 
-        with canvas(device) as draw:
-            draw.rectangle(device.bounding_box, outline="black", fill="black")
-            draw.text((10, 30), "Remote Server", fill="white", font=font)
-            status = "ON" if running else "OFF"
-            color = "green" if running else "red"
-            draw.text((10, 60), f"Status: {status}", fill=color, font=font)
-            if running:
-                draw.text(
-                    (10, 80), f"{ip_addr}:8000", fill="yellow", font=font
-                )
+        draw_remote(running, ip_addr)
         time.sleep(0.05)
 
 
