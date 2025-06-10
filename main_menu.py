@@ -68,6 +68,9 @@ MENU_ITEMS = [
 
 
 current_index = 0
+top_index = 0
+LINE_HEIGHT = 20
+ITEMS_PER_SCREEN = LCD_HEIGHT // LINE_HEIGHT
 
 
 def run_selected():
@@ -85,19 +88,30 @@ print("Main menu started. Use joystick to navigate and KEY1/JOY_PRESS to select.
 try:
     while True:
         if GPIO.input(BUTTON_PINS["JOY_UP"]) == GPIO.LOW:
+            prev_index = current_index
             current_index = (current_index - 1) % len(MENU_ITEMS)
+            if prev_index == 0 and current_index == len(MENU_ITEMS) - 1:
+                top_index = max(0, len(MENU_ITEMS) - ITEMS_PER_SCREEN)
+            elif current_index < top_index:
+                top_index = current_index
             time.sleep(0.2)
         elif GPIO.input(BUTTON_PINS["JOY_DOWN"]) == GPIO.LOW:
+            prev_index = current_index
             current_index = (current_index + 1) % len(MENU_ITEMS)
+            if prev_index == len(MENU_ITEMS) - 1 and current_index == 0:
+                top_index = 0
+            elif current_index >= top_index + ITEMS_PER_SCREEN:
+                top_index = current_index - ITEMS_PER_SCREEN + 1
             time.sleep(0.2)
         elif GPIO.input(BUTTON_PINS["JOY_PRESS"]) == GPIO.LOW or GPIO.input(BUTTON_PINS["KEY1"]) == GPIO.LOW:
             run_selected()
 
         with canvas(device) as draw:
             draw.rectangle(device.bounding_box, outline="black", fill="black")
-            for i, (name, _) in enumerate(MENU_ITEMS):
-                y = 40 + i * 20
-                if i == current_index:
+            for offset, (name, _) in enumerate(MENU_ITEMS[top_index:top_index + ITEMS_PER_SCREEN]):
+                item_index = top_index + offset
+                y = offset * LINE_HEIGHT
+                if item_index == current_index:
                     draw.text((15, y), f"> {name}", fill="yellow", font=font)
                 else:
                     draw.text((15, y), name, fill="white", font=font)
