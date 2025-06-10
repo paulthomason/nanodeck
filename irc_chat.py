@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
-"""Simple console IRC client for petserver.local #pet."""
+"""Simple console IRC client for #pet on 192.168.0.81."""
 
-import os
 import socket
 import threading
 
-SERVER = os.environ.get("IRC_SERVER", "petserver.local")
-PORT = int(os.environ.get("IRC_PORT", "6667"))
-CHANNEL = os.environ.get("IRC_CHANNEL", "#pet")
-NICK = os.environ.get("IRC_NICK", "birdie")
+# Connection details are now fixed so that the client always connects to
+# 192.168.0.81 on port 6667 using nickname "birdie" in channel "#pet".
+SERVER = "192.168.0.81"
+PORT = 6667
+CHANNEL = "#pet"
+NICK = "birdie"
 
 
 def get_text_input(prompt: str = "") -> str:
