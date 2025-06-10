@@ -96,3 +96,13 @@ serial_interface = spi(port=0, device=0, cs_high=False,
 # LCD device initialization
 device = st7735(serial_interface, width=128, height=128, h_offset=2, v_offset=1)
 # h_offset/v_offset may need minor tuning for perfect alignment on 128x128 physical screens
+```
+
+## 5. Settings Menu
+
+From the main menu you can open a simple settings application. The following options are available:
+
+* **Display → Brightness** – adjust the LCD brightness using the joystick left/right.
+* **Connections → WiFi** – scan for nearby networks and attempt to connect. Press `KEY2` to rescan.
+* **Connections → Bluetooth** – list Bluetooth devices and connect to one. Press `KEY2` to rescan.
+
