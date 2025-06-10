@@ -18,11 +18,18 @@ DC_PIN = 25
 LCD_WIDTH = 128
 LCD_HEIGHT = 128
 
-serial = spi(port=0, device=0, cs_high=False,
-             gpio_DC=DC_PIN, gpio_RST=RST_PIN,
-             speed_hz=16000000)
+serial = spi(
+    port=0,
+    device=0,
+    cs_high=False,
+    gpio_DC=DC_PIN,
+    gpio_RST=RST_PIN,
+    speed_hz=16000000,
+)
 
-device = st7735(serial, width=LCD_WIDTH, height=LCD_HEIGHT, h_offset=2, v_offset=1)
+device = st7735(
+    serial, width=LCD_WIDTH, height=LCD_HEIGHT, h_offset=2, v_offset=1
+)
 
 try:
     font = ImageFont.truetype("DejaVuSansMono.ttf", 12)
@@ -49,10 +56,17 @@ for pin in BUTTON_PINS.values():
 def reinitialize():
     """Reinitialize display and GPIO after running another script."""
     global serial, device
-    serial = spi(port=0, device=0, cs_high=False,
-                 gpio_DC=DC_PIN, gpio_RST=RST_PIN,
-                 speed_hz=16000000)
-    device = st7735(serial, width=LCD_WIDTH, height=LCD_HEIGHT, h_offset=2, v_offset=1)
+    serial = spi(
+        port=0,
+        device=0,
+        cs_high=False,
+        gpio_DC=DC_PIN,
+        gpio_RST=RST_PIN,
+        speed_hz=16000000,
+    )
+    device = st7735(
+        serial, width=LCD_WIDTH, height=LCD_HEIGHT, h_offset=2, v_offset=1
+    )
     GPIO.setmode(GPIO.BCM)
     for pin in BUTTON_PINS.values():
         GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
@@ -76,7 +90,9 @@ ITEMS_PER_SCREEN = LCD_HEIGHT // LINE_HEIGHT
 
 
 def run_selected():
-    script = MENU_ITEMS[current_index][1]
+    script = os.path.join(
+        os.path.dirname(__file__), MENU_ITEMS[current_index][1]
+    )
     device.cleanup()
     GPIO.cleanup()
     try:
@@ -86,7 +102,9 @@ def run_selected():
         time.sleep(0.5)
 
 
-print("Main menu started. Use joystick to navigate and KEY1/JOY_PRESS to select.")
+print(
+    "Main menu started. Use joystick to navigate and KEY1/JOY_PRESS to select."
+)
 try:
     while True:
         if GPIO.input(BUTTON_PINS["JOY_UP"]) == GPIO.LOW:
@@ -105,12 +123,17 @@ try:
             elif current_index >= top_index + ITEMS_PER_SCREEN:
                 top_index = current_index - ITEMS_PER_SCREEN + 1
             time.sleep(0.2)
-        elif GPIO.input(BUTTON_PINS["JOY_PRESS"]) == GPIO.LOW or GPIO.input(BUTTON_PINS["KEY1"]) == GPIO.LOW:
+        elif (
+            GPIO.input(BUTTON_PINS["JOY_PRESS"]) == GPIO.LOW
+            or GPIO.input(BUTTON_PINS["KEY1"]) == GPIO.LOW
+        ):
             run_selected()
 
         with canvas(device) as draw:
             draw.rectangle(device.bounding_box, outline="black", fill="black")
-            for offset, (name, _) in enumerate(MENU_ITEMS[top_index:top_index + ITEMS_PER_SCREEN]):
+            for offset, (name, _) in enumerate(
+                MENU_ITEMS[top_index:top_index + ITEMS_PER_SCREEN]
+            ):
                 item_index = top_index + offset
                 y = offset * LINE_HEIGHT
                 if item_index == current_index:
@@ -124,4 +147,3 @@ except KeyboardInterrupt:
 finally:
     device.cleanup()
     GPIO.cleanup()
-
