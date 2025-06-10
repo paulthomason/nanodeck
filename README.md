@@ -109,4 +109,5 @@ From the main menu you can open a simple settings application. The following opt
   * The client connects to `irc.libera.chat` by default. You can override this
     by setting the `IRC_SERVER`, `IRC_PORT`, `IRC_CHANNEL`, or `IRC_NICK`
     environment variables before launching the program.
+* **Remote Web Server** – start a simple HTTP server for controlling the device remotely.
 
