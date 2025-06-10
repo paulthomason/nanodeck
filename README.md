@@ -105,7 +105,8 @@ From the main menu you can open a simple settings application. The following opt
 * **Display → Brightness** – adjust the LCD brightness using the joystick left/right.
 * **Connections → WiFi** – scan for nearby networks and attempt to connect. Press `KEY2` to rescan.
 * **Connections → Bluetooth** – list Bluetooth devices and connect to one. Press `KEY2` to rescan.
-* **IRC Chat** – open a basic IRC client to read and send messages.
+* **IRC Chat** – open a basic IRC client to read and send messages. Chat output
+  is displayed directly on the LCD.
   * The client now always connects to `192.168.0.81` on port `6667` and joins
     the `#pet` channel using the nickname `birdie`.
 * **Remote Web Server** – start a simple HTTP server for controlling the device remotely.
