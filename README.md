@@ -69,7 +69,8 @@ Follow these steps on a fresh Raspberry Pi OS (Legacy) Lite (32-bit) install to 
     ```bash
     pip install -r requirements.txt
     ```
-    The `psutil` package is optional and used for system monitoring examples.
+    The `requirements.txt` file includes:
+    `luma.lcd`, `luma.core`, `RPi.GPIO`, `Pillow`, and the optional `psutil` package used for system monitoring examples.
 
 ## 4. Writing to the Screen (`luma.lcd`)
 
