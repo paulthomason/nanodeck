@@ -105,4 +105,5 @@ From the main menu you can open a simple settings application. The following opt
 * **Display → Brightness** – adjust the LCD brightness using the joystick left/right.
 * **Connections → WiFi** – scan for nearby networks and attempt to connect. Press `KEY2` to rescan.
 * **Connections → Bluetooth** – list Bluetooth devices and connect to one. Press `KEY2` to rescan.
+* **IRC Chat** – open a basic IRC client to read and send messages.
 
