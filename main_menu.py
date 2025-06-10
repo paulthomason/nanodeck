@@ -63,6 +63,7 @@ MENU_ITEMS = [
     ("Input Demo", "test_screen_buttons_joystick.py"),
     ("Snake Game", "snake_game.py"),
     ("Images", "images_app.py"),
+    ("Settings", "settings_menu.py"),
 ]
 
 
