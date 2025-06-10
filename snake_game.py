@@ -177,6 +177,8 @@ try:
     last_move_time = time.time() # Tracks when the snake last moved
 
     while True:
+        if GPIO.input(BUTTON_PINS["KEY3"]) == GPIO.LOW:
+            break
         # Only process game logic if the game is not over
         if not game_over:
             current_time = time.time()
