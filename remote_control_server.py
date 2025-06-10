@@ -9,8 +9,10 @@ import time
 import urllib.parse
 
 # Global variables for communication with the main application
+from typing import Optional
+
 remote_input_queue: queue.Queue[str] = queue.Queue()
-remote_image_request: str | None = None
+remote_image_request: Optional[str] = None
 
 # List of images available for viewing
 AVAILABLE_IMAGES: list[str] = [
