@@ -57,12 +57,21 @@ def brightness_menu():
             device.contrast(brightness)
             time.sleep(0.1)
         elif GPIO.input(BUTTON_PINS["KEY1"]) == GPIO.LOW or GPIO.input(BUTTON_PINS["JOY_PRESS"]) == GPIO.LOW or GPIO.input(BUTTON_PINS["KEY3"]) == GPIO.LOW:
+            wait_for_release("KEY1", "JOY_PRESS", "KEY3")
             return "BACK"
 
         with canvas(device) as draw:
             draw.rectangle(device.bounding_box, outline="black", fill="black")
             draw.text((20, 50), "Brightness", fill="white", font=font)
             draw.text((20, 70), f"{brightness}", fill="yellow", font=font)
+        time.sleep(0.05)
+
+
+def wait_for_release(*buttons):
+    """Block until the specified buttons are released."""
+    if not buttons:
+        buttons = ("KEY1", "JOY_PRESS")
+    while any(GPIO.input(BUTTON_PINS[b]) == GPIO.LOW for b in buttons):
         time.sleep(0.05)
 
 
@@ -76,6 +85,7 @@ def menu_loop(menu_items):
             index = (index + 1) % len(menu_items)
             time.sleep(0.2)
         elif GPIO.input(BUTTON_PINS["KEY1"]) == GPIO.LOW or GPIO.input(BUTTON_PINS["JOY_PRESS"]) == GPIO.LOW:
+            wait_for_release("KEY1", "JOY_PRESS")
             action = menu_items[index][1]
             if callable(action):
                 result = action()
@@ -139,10 +149,12 @@ def wifi_menu():
             scan()
             time.sleep(0.2)
         elif GPIO.input(BUTTON_PINS["KEY1"]) == GPIO.LOW or GPIO.input(BUTTON_PINS["JOY_PRESS"]) == GPIO.LOW:
+            wait_for_release("KEY1", "JOY_PRESS")
             if networks:
                 connect(networks[index])
             return "BACK"
         elif GPIO.input(BUTTON_PINS["KEY3"]) == GPIO.LOW:
+            wait_for_release("KEY3")
             return "BACK"
 
         with canvas(device) as draw:
@@ -197,10 +209,12 @@ def bluetooth_menu():
             scan()
             time.sleep(0.2)
         elif GPIO.input(BUTTON_PINS["KEY1"]) == GPIO.LOW or GPIO.input(BUTTON_PINS["JOY_PRESS"]) == GPIO.LOW:
+            wait_for_release("KEY1", "JOY_PRESS")
             if devices:
                 connect(devices[index][0])
             return "BACK"
         elif GPIO.input(BUTTON_PINS["KEY3"]) == GPIO.LOW:
+            wait_for_release("KEY3")
             return "BACK"
 
         with canvas(device) as draw:
