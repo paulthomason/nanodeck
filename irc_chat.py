@@ -1,11 +1,18 @@
 #!/usr/bin/env python3
-"""IRC chat viewer using luma.lcd and RPi.GPIO."""
+"""IRC chat viewer using luma.lcd and RPi.GPIO.
+
+The IRC server, port, channel and nickname can be configured with the
+environment variables ``IRC_SERVER``, ``IRC_PORT``, ``IRC_CHANNEL`` and
+``IRC_NICK``. By default the client connects to ``irc.libera.chat`` on
+port ``6667``.
+"""
 
 import time
 import socket
 import threading
 import queue
 import logging
+import os
 
 import RPi.GPIO as GPIO
 from luma.core.interface.serial import spi
@@ -161,15 +168,20 @@ def _irc_thread(server: str, port: int, channel: str, nick: str) -> None:
 
 
 def init_chat() -> None:
+    """Start the background IRC thread if not already running."""
     global _init, _thread
     if _init:
         return
-    server = "192.168.0.81"  # <-- Replace with your IRC server
-    port = 6667
-    channel = "#pet"        # <-- Replace with your desired channel
-    nick = NICK
-    logger.debug(f"Starting IRC thread for {server}:{port} {channel} as {nick}")
-    _thread = threading.Thread(target=_irc_thread, args=(server, port, channel, nick), daemon=True)
+    server = os.environ.get("IRC_SERVER", "irc.libera.chat")
+    port = int(os.environ.get("IRC_PORT", "6667"))
+    channel = os.environ.get("IRC_CHANNEL", "#pet")
+    nick = os.environ.get("IRC_NICK", NICK)
+    logger.debug(
+        f"Starting IRC thread for {server}:{port} {channel} as {nick}"
+    )
+    _thread = threading.Thread(
+        target=_irc_thread, args=(server, port, channel, nick), daemon=True
+    )
     _thread.start()
     _init = True
 
