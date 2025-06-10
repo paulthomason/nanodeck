@@ -2,6 +2,7 @@
 
 import time
 from datetime import datetime
+import RPi.GPIO as GPIO
 from luma.core.interface.serial import spi
 from luma.core.render import canvas
 from luma.lcd.device import st7735
@@ -30,6 +31,11 @@ serial = spi(port=0, device=0, cs_high=False,
 # and might need minor tuning if your display area is slightly off-center. 
 device = st7735(serial, width=LCD_WIDTH, height=LCD_HEIGHT, h_offset=2, v_offset=1)
 
+# --- Button setup ---
+GPIO.setmode(GPIO.BCM)
+KEY3_PIN = 16
+GPIO.setup(KEY3_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
 # Load a default font (or specify a path to a .ttf font file if you have one)
 try:
     font = ImageFont.truetype("DejaVuSansMono.ttf", 14)
@@ -41,6 +47,8 @@ print("Screen test started. Press Ctrl+C to exit.")
 
 try:
     while True:
+        if GPIO.input(KEY3_PIN) == GPIO.LOW:
+            break
         # Create a new drawing canvas
         with canvas(device) as draw:
             # Clear the screen (fill with black)
@@ -75,4 +83,5 @@ finally:
     # Ensures cleanup operations are performed whether the script exits normally or due to an error
     print("Cleaning up display...")
     device.cleanup() # Cleans up the luma.lcd device resources
+    GPIO.cleanup()
     print("Cleanup complete.")

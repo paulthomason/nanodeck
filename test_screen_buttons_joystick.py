@@ -69,6 +69,8 @@ print("Press buttons/joystick, and observe console output & LCD display.")
 # --- Main Display and Input Polling Loop ---
 try:
     while True:
+        if GPIO.input(BUTTON_PINS["KEY3"]) == GPIO.LOW:
+            break
         with canvas(device) as draw:
             # Clear the screen
             draw.rectangle(device.bounding_box, outline="black", fill="black")
