@@ -106,4 +106,7 @@ From the main menu you can open a simple settings application. The following opt
 * **Connections → WiFi** – scan for nearby networks and attempt to connect. Press `KEY2` to rescan.
 * **Connections → Bluetooth** – list Bluetooth devices and connect to one. Press `KEY2` to rescan.
 * **IRC Chat** – open a basic IRC client to read and send messages.
+  * The client connects to `irc.libera.chat` by default. You can override this
+    by setting the `IRC_SERVER`, `IRC_PORT`, `IRC_CHANNEL`, or `IRC_NICK`
+    environment variables before launching the program.
 
