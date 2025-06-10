@@ -62,6 +62,7 @@ MENU_ITEMS = [
     ("LCD Demo", "test_144_lcd.py"),
     ("Input Demo", "test_screen_buttons_joystick.py"),
     ("Snake Game", "snake_game.py"),
+    ("IRC Chat", "irc_chat.py"),
     ("Images", "images_app.py"),
     ("Settings", "settings_menu.py"),
 ]
