@@ -8,6 +8,12 @@ import threading
 import time
 import urllib.parse
 
+import RPi.GPIO as GPIO
+from luma.core.interface.serial import spi
+from luma.core.render import canvas
+from luma.lcd.device import st7735
+from PIL import ImageFont
+
 # Global variables for communication with the main application
 from typing import Optional
 
@@ -22,6 +28,34 @@ AVAILABLE_IMAGES: list[str] = [
 ]
 
 _server_thread = None
+_server = None
+
+# --- Display setup ---
+RST_PIN = 27
+DC_PIN = 25
+LCD_WIDTH = 128
+LCD_HEIGHT = 128
+
+serial = spi(port=0, device=0, cs_high=False,
+             gpio_DC=DC_PIN, gpio_RST=RST_PIN,
+             speed_hz=16000000)
+
+device = st7735(serial, width=LCD_WIDTH, height=LCD_HEIGHT, h_offset=2, v_offset=1)
+
+try:
+    font = ImageFont.truetype("DejaVuSansMono.ttf", 12)
+except IOError:
+    font = ImageFont.load_default()
+
+# --- Button setup ---
+GPIO.setmode(GPIO.BCM)
+BUTTON_PINS = {
+    "KEY1": 21,
+    "KEY3": 16,
+    "JOY_PRESS": 13,
+}
+for pin in BUTTON_PINS.values():
+    GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 
 class RemoteHandler(http.server.BaseHTTPRequestHandler):
@@ -113,12 +147,24 @@ def get_pi_ip_address() -> str:
 
 def start_server(host: str = "0.0.0.0", port: int = 8000) -> None:
     """Start the remote control HTTP server."""
-    global _server_thread
-    if _server_thread:
+    global _server_thread, _server
+    if _server_thread and _server_thread.is_alive():
         return
-    server = http.server.ThreadingHTTPServer((host, port), RemoteHandler)
-    _server_thread = threading.Thread(target=server.serve_forever, daemon=True)
+    _server = http.server.ThreadingHTTPServer((host, port), RemoteHandler)
+    _server_thread = threading.Thread(target=_server.serve_forever, daemon=True)
     _server_thread.start()
+
+
+def stop_server() -> None:
+    """Stop the running HTTP server if it is active."""
+    global _server_thread, _server
+    if _server:
+        _server.shutdown()
+        _server.server_close()
+        _server = None
+    if _server_thread:
+        _server_thread.join(timeout=1)
+        _server_thread = None
 
 
 def draw_remote(screen, FONT) -> None:
@@ -126,12 +172,39 @@ def draw_remote(screen, FONT) -> None:
     pass
 
 
+def remote_menu() -> None:
+    """Display a simple interface to toggle the web server."""
+    running = _server_thread is not None and _server_thread.is_alive()
+    ip_addr = get_pi_ip_address()
+    while True:
+        if GPIO.input(BUTTON_PINS["KEY1"]) == GPIO.LOW or GPIO.input(BUTTON_PINS["JOY_PRESS"]) == GPIO.LOW:
+            if running:
+                stop_server()
+                running = False
+            else:
+                start_server()
+                running = True
+                ip_addr = get_pi_ip_address()
+            time.sleep(0.2)
+        elif GPIO.input(BUTTON_PINS["KEY3"]) == GPIO.LOW:
+            break
+
+        with canvas(device) as draw:
+            draw.rectangle(device.bounding_box, outline="black", fill="black")
+            draw.text((10, 30), "Remote Server", fill="white", font=font)
+            status = "ON" if running else "OFF"
+            color = "green" if running else "red"
+            draw.text((10, 60), f"Status: {status}", fill=color, font=font)
+            if running:
+                draw.text((10, 80), f"{ip_addr}:8000", fill="yellow", font=font)
+        time.sleep(0.05)
+
+
 if __name__ == "__main__":
-    start_server()
-    ip = get_pi_ip_address()
-    print(f"Remote server running on http://{ip}:8000/ (Ctrl+C to stop)")
     try:
-        while True:
-            time.sleep(1)
+        remote_menu()
     except KeyboardInterrupt:
         pass
+    finally:
+        device.cleanup()
+        GPIO.cleanup()
